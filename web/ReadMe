@@ -1,0 +1,65 @@
+create schema hms;
+
+
+Create table userdetails(
+    userid int primary key not null auto_increment,
+    UserName varchar(256),
+    fName varchar(256),
+    lName varchar(256),
+    Email varchar(256),
+    Password varchar(256),
+    UserType varchar(256),
+    CreatedOn timestamp,
+    UpdatedOn timestamp,
+    EmployeeNo varchar(256),
+    Phone varchar(256)
+);
+
+
+CREATE TABLE rooms(
+    roomid int primary key not null auto_increment,
+    room_no int,
+    status varchar(256),
+    room_type varchar(256),
+    price_per_day decimal(10,3),
+    room_dscrpt varchar(256),
+    created_on timestamp,
+    updated_on timestamp
+);
+
+
+CREATE TABLE guests(
+    guestid int primary key not null auto_increment,
+    lname varchar(256),
+    fname varchar(256),
+    address1 varchar(256),
+    address2 varchar(256),
+    city varchar(256),
+    state varchar(256),
+    country varchar(256),
+    pincode int,
+    UID_type varchar(256),
+    UID_NO varchar(256),
+    phone varchar(256),
+    created_on timestamp,
+    update_on timestamp
+);
+
+
+CREATE TABLE Bookings(
+    bookingid int primary key not null auto_increment,
+    guestid int,
+    roomid int,
+    foreign key (guestid) references guests(guestid),
+    foreign key (roomid) references rooms(roomid),
+    total_bill decimal(10,2),
+    room_price decimal(10,2),
+    taxes decimal(10,2),
+    beverages decimal(10,2),
+    check_in date,
+    check_out date,
+    booked_days int,
+    booked_by int,
+    foreign key (booked_by) references userdetails(userid)
+);
+

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="3.1"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    
+    <display-name>HMS</display-name>
+    
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    
+    <!-- Authentication and User Management JSP Mappings -->
+    <servlet>
+        <servlet-name>Home</servlet-name>
+        <jsp-file>/index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Home</servlet-name>
+        <url-pattern>/Home</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>Login</servlet-name>
+        <jsp-file>/login.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Login</servlet-name>
+        <url-pattern>/Login</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>Logout</servlet-name>
+        <jsp-file>/logout.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Logout</servlet-name>
+        <url-pattern>/Logout</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ValidateCredentials</servlet-name>
+        <jsp-file>/ValidateCredentials.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ValidateCredentials</servlet-name>
+        <url-pattern>/ValidateCredentials</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>saveRegUser</servlet-name>
+        <jsp-file>/saveRegUser.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>saveRegUser</servlet-name>
+        <url-pattern>/saveRegUser</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ValidatedUsername</servlet-name>
+        <jsp-file>/UsernameExistValidate.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ValidatedUsername</servlet-name>
+        <url-pattern>/ValidatedUsername</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Room Management JSP Mappings -->
+    <servlet>
+        <servlet-name>Rooms</servlet-name>
+        <jsp-file>/Rooms/frmRooms.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Rooms</servlet-name>
+        <url-pattern>/Rooms</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>RoomsType</servlet-name>
+        <jsp-file>/Rooms/frmTypePrice.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RoomsType</servlet-name>
+        <url-pattern>/RoomsType</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>RoomsList</servlet-name>
+        <jsp-file>/Rooms/RoomList.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RoomsList</servlet-name>
+        <url-pattern>/RoomsList</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>RoomListInnr</servlet-name>
+        <jsp-file>/Rooms/RoomListInnr.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RoomListInnr</servlet-name>
+        <url-pattern>/RoomListInnr</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>DeleteRooms</servlet-name>
+        <jsp-file>/Rooms/DeleteRooms.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteRooms</servlet-name>
+        <url-pattern>/DeleteRooms</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>RoomInsert</servlet-name>
+        <jsp-file>/Rooms/insertRoomDtls.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RoomInsert</servlet-name>
+        <url-pattern>/RoomInsert</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ValidateRoomNo</servlet-name>
+        <jsp-file>/Rooms/ValidateRoomNo.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ValidateRoomNo</servlet-name>
+        <url-pattern>/ValidateRoomNo</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>DeleteType</servlet-name>
+        <jsp-file>/Rooms/DeleteType.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteType</servlet-name>
+        <url-pattern>/DeleteType</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>InsertType</servlet-name>
+        <jsp-file>/Rooms/insertTypePrice.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InsertType</servlet-name>
+        <url-pattern>/InsertType</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Guest Management JSP Mappings -->
+    <servlet>
+        <servlet-name>Guests</servlet-name>
+        <jsp-file>/Guest/frmGuest.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Guests</servlet-name>
+        <url-pattern>/Guests</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>InsertGuest</servlet-name>
+        <jsp-file>/Guest/InsertGuest.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InsertGuest</servlet-name>
+        <url-pattern>/InsertGuest</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>GuestList</servlet-name>
+        <jsp-file>/Guest/GuestList.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GuestList</servlet-name>
+        <url-pattern>/GuestList</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>GuestListInnr</servlet-name>
+        <jsp-file>/Guest/GuestListInnr.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GuestListInnr</servlet-name>
+        <url-pattern>/GuestListInnr</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>DeleteGuest</servlet-name>
+        <jsp-file>/Guest/DeleteGuests.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteGuest</servlet-name>
+        <url-pattern>/DeleteGuest</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Booking Management JSP Mappings -->
+    <servlet>
+        <servlet-name>BookForGuest</servlet-name>
+        <jsp-file>/Bookins/frmBookings.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookForGuest</servlet-name>
+        <url-pattern>/BookForGuest</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>InsertBookings</servlet-name>
+        <jsp-file>/Bookins/InsertBookings.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InsertBookings</servlet-name>
+        <url-pattern>/InsertBookings</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>BookingsList</servlet-name>
+        <jsp-file>/Bookins/BookingsList.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookingsList</servlet-name>
+        <url-pattern>/BookingsList</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>BookingsListInnr</servlet-name>
+        <jsp-file>/Bookins/BookingsInnrList.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BookingsListInnr</servlet-name>
+        <url-pattern>/BookingsListInnr</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>DeleteBookings</servlet-name>
+        <jsp-file>/Bookins/DeleteBookings.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteBookings</servlet-name>
+        <url-pattern>/DeleteBookings</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>Checkout</servlet-name>
+        <jsp-file>/Bookins/Checkout.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Checkout</servlet-name>
+        <url-pattern>/Checkout</url-pattern>
+    </servlet-mapping>
+    
+</web-app>

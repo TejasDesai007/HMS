@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hms
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/hotel_db.sql:/docker-entrypoint-initdb.d/hotel_db.sql
+
+  web:
+    build: .
+    container_name: hotel-web
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+volumes:
+  db_data:

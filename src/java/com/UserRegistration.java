@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com;
 
 import java.sql.Connection;
@@ -9,14 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- *
- * @author DELL
- */
 public class UserRegistration {
 
-    private String txtFName,txtLName,txtEmail,txtPhone,txtEmpNo,selUserType,txtUserNm,txtPassword,txtCnfPassword;
+    private String txtFName, txtLName, txtEmail, txtPhone, txtEmpNo, selUserType, txtUserNm, txtPassword, txtCnfPassword;
 
+    
     public String getTxtFName() {
         return txtFName;
     }
@@ -89,8 +82,6 @@ public class UserRegistration {
         this.txtCnfPassword = txtCnfPassword;
     }
 
-    
-
     public String isBlankNull(String str) {
         return (str == null || str.trim().isEmpty()) ? "" : str;
     }
@@ -101,11 +92,33 @@ public class UserRegistration {
         PreparedStatement pstmt = null;
         ResultSet rst = null;
         MySqlConnection dbc;
+
         try {
             dbc = new MySqlConnection();
             con = dbc.getConnection();
-            pstmt = con.prepareStatement("insert into userdetails(UserName, fName, lName, Email, Password, UserType, CreatedOn, EmployeeNo, Phone) values(?,?,?,?,?,?,now(),?,?)");
-            System.out.println("insert into userdetails(UserName, fName, lName, Email, Password, UserType, CreatedOn, EmployeeNo, Phone) values('"+ txtUserNm +"','"+ txtFName +"','"+ txtLName +"','"+ txtEmail +"','"+ txtPassword +"','"+ selUserType +"',now(),'"+ txtEmpNo +"','"+ txtPhone +"')");
+
+            // 🔹 Start transaction
+            con.setAutoCommit(false);
+
+            // 🔹 Lock username/email row to prevent duplicates
+            pstmt = con.prepareStatement(
+                "SELECT * FROM userdetails WHERE UserName = ? OR Email = ? FOR UPDATE"
+            );
+            pstmt.setString(1, txtUserNm);
+            pstmt.setString(2, txtEmail);
+            rst = pstmt.executeQuery();
+
+            if (rst.next()) {
+                throw new SQLException("Username or Email already exists.");
+            }
+            rst.close();
+            pstmt.close();
+
+            // 🔹 Insert new user
+            pstmt = con.prepareStatement(
+                "INSERT INTO userdetails(UserName, fName, lName, Email, Password, UserType, CreatedOn, EmployeeNo, Phone) " +
+                "VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)"
+            );
             pstmt.setString(1, txtUserNm);
             pstmt.setString(2, txtFName);
             pstmt.setString(3, txtLName);
@@ -116,15 +129,22 @@ public class UserRegistration {
             pstmt.setString(8, txtPhone);
             pstmt.executeUpdate();
             pstmt.close();
-            
-            pstmt.close();
+
+            // 🔹 Commit transaction
+            con.commit();
+
         } catch (Exception e) {
+            if (con != null) {
+                try { con.rollback(); } catch (SQLException ex2) { ex2.printStackTrace(); }
+            }
             e.printStackTrace();
-            e = ex;
+            ex = e;
         } finally {
-            con.close();
+            if (rst != null) rst.close();
+            if (pstmt != null) pstmt.close();
+            if (con != null) con.close();
         }
+
         return ex;
     }
-
 }

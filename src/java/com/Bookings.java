@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com;
 
 import java.sql.Connection;
@@ -9,14 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- *
- * @author TEJAS
- */
 public class Bookings {
 
     private String txtBookingid, txtUserId, txtTotalAmt, txtBeverage, txtTax, txtTaxPrc, txtStayDays, txtRoomPrice, slcRooms, slcGuest;
 
+    // --- Getters & Setters (same as before) ---
     public String getTxtBookingid() {
         return txtBookingid;
     }
@@ -107,13 +100,34 @@ public class Bookings {
         PreparedStatement pstmt = null;
         ResultSet rst = null;
         MySqlConnection dbc;
-        String roomtype = "";
+
         try {
             dbc = new MySqlConnection();
             con = dbc.getConnection();
 
+            // 🔹 start transaction
+            con.setAutoCommit(false);
+
             if (txtBookingid == null || txtBookingid.trim().isEmpty()) {
-                pstmt = con.prepareStatement("Insert into Bookings(guestid, roomid, room_price, taxes, beverages, check_in, booked_days, booked_by) values (?,?,?,?,?,now(),?,?)");
+
+                // 🔹 Lock the room row (pessimistic lock)
+                pstmt = con.prepareStatement("SELECT status FROM rooms WHERE roomid = ? FOR UPDATE");
+                pstmt.setString(1, slcRooms);
+                rst = pstmt.executeQuery();
+
+                if (rst.next()) {
+                    String status = rst.getString("status");
+                    if ("Occupied".equalsIgnoreCase(status)) {
+                        throw new SQLException("Room already occupied! Please select another room.");
+                    }
+                }
+                rst.close();
+                pstmt.close();
+
+                // 🔹 Insert booking
+                pstmt = con.prepareStatement(
+                        "INSERT INTO Bookings(guestid, roomid, room_price, taxes, beverages, check_in, booked_days, booked_by) "
+                        + "VALUES (?,?,?,?,?,NOW(),?,?)");
                 pstmt.setString(1, slcGuest);
                 pstmt.setString(2, slcRooms);
                 pstmt.setString(3, txtRoomPrice);
@@ -124,32 +138,49 @@ public class Bookings {
                 pstmt.executeUpdate();
                 pstmt.close();
 
-                pstmt = con.prepareStatement("update rooms set status = 'Occupied' where roomid=?");
+                // 🔹 Update room status
+                pstmt = con.prepareStatement("UPDATE rooms SET status = 'Occupied' WHERE roomid=?");
                 pstmt.setString(1, slcRooms);
                 pstmt.executeUpdate();
                 pstmt.close();
+
             } else {
-                pstmt = con.prepareStatement("Update Bookings set room_price = ?, taxes = ?, beverages = ?, booked_days = ? where bookingid = ?");
+                // 🔹 Update existing booking (no need to lock room)
+                pstmt = con.prepareStatement(
+                        "UPDATE Bookings SET room_price = ?, taxes = ?, beverages = ?, booked_days = ? WHERE bookingid = ?");
                 pstmt.setString(1, txtRoomPrice);
                 pstmt.setString(2, txtTax);
                 pstmt.setString(3, txtBeverage);
                 pstmt.setString(4, txtStayDays);
-                pstmt.setString(5, txtBookingid); // Ensure that the correct room_id is set
+                pstmt.setString(5, txtBookingid);
                 pstmt.executeUpdate();
-                System.out.println("Update Bookings set room_price = '" + txtRoomPrice
-                        + "', taxes = '" + txtTax
-                        + "', beverages = '" + txtBeverage
-                        + "', booked_days = '" + txtStayDays
-                        + "' where bookingid = '" + txtBookingid + "';");
                 pstmt.close();
             }
 
+            // 🔹 commit transaction
+            con.commit();
+
         } catch (Exception e) {
+            if (con != null) {
+                try {
+                    con.rollback(); // rollback on error
+                } catch (SQLException ex2) {
+                    ex2.printStackTrace();
+                }
+            }
             System.out.println("Error in Bookings.java");
             e.printStackTrace();
-            e = ex;
+            ex = e;
         } finally {
-            con.close();
+            if (rst != null) {
+                rst.close();
+            }
+            if (pstmt != null) {
+                pstmt.close();
+            }
+            if (con != null) {
+                con.close();
+            }
         }
         return ex;
     }

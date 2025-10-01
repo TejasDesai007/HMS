@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com;
 
 import java.sql.Connection;
@@ -9,13 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- *
- * @author TEJAS
- */
 public class TypePrice {
 
     private String txtUserId, txtTypePrice, txtRoomType;
+
 
     public String getTxtUserId() {
         return txtUserId;
@@ -40,7 +33,6 @@ public class TypePrice {
     public void setTxtRoomType(String txtRoomType) {
         this.txtRoomType = txtRoomType;
     }
-
     public String isBlankNull(String s) {
         return (s == null || s.trim().isEmpty()) ? "" : s;
     }
@@ -51,23 +43,51 @@ public class TypePrice {
         PreparedStatement pstmt = null;
         ResultSet rst = null;
         MySqlConnection dbc;
+
         try {
             dbc = new MySqlConnection();
             con = dbc.getConnection();
-            pstmt = con.prepareStatement("Insert into roomsTypesDetails(type,type_price,created_on,created_by) values (?,?,now(),?)");
+
+            // 🔹 Start transaction
+            con.setAutoCommit(false);
+
+            // 🔹 Lock the type row (if exists) to prevent duplicate insert
+            pstmt = con.prepareStatement("SELECT * FROM roomsTypesDetails WHERE type = ? FOR UPDATE");
+            pstmt.setString(1, txtRoomType);
+            rst = pstmt.executeQuery();
+
+            if (rst.next()) {
+                throw new SQLException("Room type '" + txtRoomType + "' already exists.");
+            }
+            rst.close();
+            pstmt.close();
+
+            // Insert new room type
+            pstmt = con.prepareStatement(
+                "INSERT INTO roomsTypesDetails(type, type_price, created_on, created_by) VALUES (?, ?, NOW(), ?)"
+            );
             pstmt.setString(1, txtRoomType);
             pstmt.setString(2, txtTypePrice);
             pstmt.setString(3, txtUserId);
             pstmt.executeUpdate();
             pstmt.close();
 
+            // 🔹 Commit transaction
+            con.commit();
+
         } catch (Exception e) {
+            if (con != null) {
+                try { con.rollback(); } catch (SQLException ex2) { ex2.printStackTrace(); }
+            }
+            System.out.println("Error in TypePrice.java");
             e.printStackTrace();
-            e = ex;
+            ex = e;
         } finally {
-            con.close();
+            if (rst != null) rst.close();
+            if (pstmt != null) pstmt.close();
+            if (con != null) con.close();
         }
+
         return ex;
     }
-
 }

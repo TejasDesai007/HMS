@@ -4,34 +4,30 @@ $(document).ready(function () {
 
     // Listen for the Enter key on each textbox (input[type="text"])
     $('#inputTable input[type="text"]').on('keydown', function (event) {
-        // Check if the key pressed is the Enter key (key code 13)
-        if (event.keyCode === 13) {
-            event.preventDefault();  // Prevent form submission or other default actions
+        if (event.keyCode === 13) { // Enter key
+            event.preventDefault();  // Prevent form submission
 
-            // Collect data from labels (headers) and textboxes (input fields) into JSON
             var data = {};
 
-            // Loop through each row to collect label-textbox pairs
+            // Collect label-textbox pairs from the table header
             $('#inputTable thead tr').each(function () {
-                // Iterate over each td in the row
                 $(this).find('td').each(function () {
-                    var label = $(this).find('label').text().trim();  // Get the label text
-                    var textbox = $(this).find('input[type="text"]'); // Get the associated textbox
+                    var label = $(this).find('label').text().trim();
+                    var textbox = $(this).find('input[type="text"]');
                     if (textbox.length > 0) {
-                        data[label] = textbox.val(); // Add label-textbox pair to JSON object
+                        data[label] = textbox.val();
                     }
                 });
             });
             console.log(JSON.stringify(data));
 
-            // Send the JSON object to the backend using AJAX
+            // Send AJAX to backend
             $.ajax({
-                url: 'BookingsListInnr', // URL of the servlet to process the data
+                url: 'BookingsListInnr',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(data), // Convert the JSON object to a string
+                data: JSON.stringify(data),
                 success: function (response) {
-                    // On success, populate the table with the returned data
                     populateTable(response);
                 },
                 error: function (xhr, status, error) {
@@ -41,15 +37,14 @@ $(document).ready(function () {
         }
     });
 
-    // Function to load the room list when the page loads
+    // Load all bookings when page loads
     function loadBookingList() {
         $.ajax({
-            url: 'BookingsListInnr', // URL to get all rooms when the page is loaded
+            url: 'BookingsListInnr',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({}), // Send an empty object to get all rooms
+            data: JSON.stringify({}),
             success: function (response) {
-                // On success, populate the table with the returned data
                 populateTable(response);
             },
             error: function (xhr, status, error) {
@@ -57,16 +52,18 @@ $(document).ready(function () {
             }
         });
     }
+
+    // Delete booking with confirmation
     function deleteBookings(bookingid) {
         if (confirm('Are you sure you want to delete this guest?')) {
             $.ajax({
                 url: 'DeleteBookings',
                 type: 'POST',
                 contentType: 'application/x-www-form-urlencoded',
-                data: {bookingid: bookingid}, // Send roomid as a regular POST parameter
+                data: { bookingid: bookingid },
                 success: function (response) {
                     alert(response.trim());
-                    loadBookingList(); // Reload the room list after deletion
+                    loadBookingList(); // Reload after deletion
                 },
                 error: function (xhr) {
                     alert('Error: ' + xhr.responseText);
@@ -75,37 +72,50 @@ $(document).ready(function () {
         }
     }
 
-    // Function to populate the table with data from the backend
+    // Confirm checkout before proceeding
+    function confirmCheckout(bookingid) {
+        if (confirm('Are you sure you want to checkout this guest?')) {
+            // Proceed with checkout via redirect
+            window.location.href = 'Checkout?bookingid=' + bookingid;
+        }
+        return false; // Prevent default link click
+    }
+
+    // Populate the table with backend data
     function populateTable(data) {
         var table = $('#inputTable tbody');
-        table.empty(); // Clear any previous results
+        table.empty();
         console.log(data);
-        // Ensure the response is parsed correctly
+
         if (Array.isArray(data)) {
-            // Iterate over the returned data and add rows to the table
             data.forEach(function (item) {
                 var row = '<tr>';
-                row += '<td class="text-center">' + item.index + '</td>'; // Empty column for actions (like buttons, etc.)
+                row += '<td class="text-center">' + item.index + '</td>';
+
+                // Edit button
                 if (!item.check_out) {
                     row += '<td class="text-center">' +
-                            '<a href="BookForGuest?bookingid=' + item.bookingid + '" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a>' +
-                            '</td>';
+                           '<a href="BookForGuest?bookingid=' + item.bookingid + '" class="btn btn-primary btn-sm">' +
+                           '<i class="fas fa-edit"></i></a>' +
+                           '</td>';
                 } else {
                     row += '<td class="text-center"></td>';
-
                 }
-                row += '<td class="text-center">' +
-                        '<button class="btn btn-danger btn-sm" onclick="deleteBookings(\'' + item.bookingid + '\')">' +
-                        '<i class="fas fa-trash"></i></button>' +
-                        '</td>';
 
-                // Check if check_out exists to show or hide the Checkout button
-                if (!item.check_out) { // If check_out is empty or null
+                // Delete button
+                row += '<td class="text-center">' +
+                       '<button class="btn btn-danger btn-sm" onclick="deleteBookings(\'' + item.bookingid + '\')">' +
+                       '<i class="fas fa-trash"></i></button>' +
+                       '</td>';
+
+                // Checkout button with confirmation
+                if (!item.check_out) {
                     row += '<td class="text-center">' +
-                            '<a href="Checkout?bookingid=' + item.bookingid + '" class="btn btn-success btn-sm">Checkout <i class="fas fa-sign-out-alt"></i></a>' +
-                            '</td>';
+                           '<a href="#" class="btn btn-success btn-sm" onclick="return confirmCheckout(\'' + item.bookingid + '\');">' +
+                           'Checkout <i class="fas fa-sign-out-alt"></i></a>' +
+                           '</td>';
                 } else {
-                    row += '<td class="text-center"></td>'; // Empty column if check_out exists
+                    row += '<td class="text-center"></td>';
                 }
 
                 row += '<td class="text-center">' + item.GuestName + '</td>';
@@ -119,5 +129,8 @@ $(document).ready(function () {
             });
         }
     }
+
+    // Expose delete and checkout functions to global scope
     window.deleteBookings = deleteBookings;
+    window.confirmCheckout = confirmCheckout;
 });

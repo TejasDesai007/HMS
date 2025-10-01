@@ -39,7 +39,7 @@
             + " join( "
             + " Select userid,fName from userdetails "
             + " )u on u.userid = g.created_by "
-            + "  WHERE 1=1 ";
+            + "  WHERE 1=1 order by created_on desc ";
         
 
     if (!lname.isEmpty()) {

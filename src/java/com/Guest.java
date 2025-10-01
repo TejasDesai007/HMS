@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com;
 
 import java.sql.Connection;
@@ -9,14 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- *
- * @author TEJAS
- */
 public class Guest {
 
     private String txtUserId, txtUIDNo, txtPhone, ddlUIDType, txtPincode, txtCountry, txtState, txtCity, txtAddress2, txtAddress1, txtFName, txtLName, txtGuestId;
 
+    
     public String getTxtUserId() {
         return txtUserId;
     }
@@ -122,19 +115,25 @@ public class Guest {
     }
 
     public Exception Guest() throws SQLException {
-
         Exception ex = null;
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rst = null;
         MySqlConnection dbc;
-        String roomtype = "";
+
         try {
             dbc = new MySqlConnection();
             con = dbc.getConnection();
 
+            // 🔹 Start transaction
+            con.setAutoCommit(false);
+
             if (txtGuestId == null || txtGuestId.trim().isEmpty()) {
-                pstmt = con.prepareStatement("Insert into guests(lname, fname, address1, address2, city, state, country, pincode, UID_type, UID_NO, phone, created_on, created_by) values (?,?,?,?,?,?,?,?,?,?,?,now(),?)");
+                // Insert new guest
+                pstmt = con.prepareStatement(
+                    "INSERT INTO guests(lname, fname, address1, address2, city, state, country, pincode, UID_type, UID_NO, phone, created_on, created_by) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,NOW(),?)"
+                );
                 pstmt.setString(1, txtLName);
                 pstmt.setString(2, txtFName);
                 pstmt.setString(3, txtAddress1);
@@ -150,8 +149,21 @@ public class Guest {
                 pstmt.executeUpdate();
                 pstmt.close();
             } else {
-                System.err.println("asfasdf");
-                pstmt = con.prepareStatement("Update guests set lname = ?, fname = ?, address1 = ?, address2 = ?, city = ?, state=? , country=?, pincode=?, UID_type=?,UID_NO=?, phone=?,update_on = now(), updated_by = ? where guestid = ?");
+                // 🔹 Lock the guest row for update to prevent concurrent modification
+                pstmt = con.prepareStatement("SELECT * FROM guests WHERE guestid = ? FOR UPDATE");
+                pstmt.setString(1, txtGuestId);
+                rst = pstmt.executeQuery();
+                if (!rst.next()) {
+                    throw new SQLException("Guest not found for guestid: " + txtGuestId);
+                }
+                rst.close();
+                pstmt.close();
+
+                // Update existing guest
+                pstmt = con.prepareStatement(
+                    "UPDATE guests SET lname = ?, fname = ?, address1 = ?, address2 = ?, city = ?, state = ?, country = ?, pincode = ?, UID_type = ?, UID_NO = ?, phone = ?, update_on = NOW(), updated_by = ? " +
+                    "WHERE guestid = ?"
+                );
                 pstmt.setString(1, txtLName);
                 pstmt.setString(2, txtFName);
                 pstmt.setString(3, txtAddress1);
@@ -166,31 +178,25 @@ public class Guest {
                 pstmt.setString(12, txtUserId);
                 pstmt.setString(13, txtGuestId);
                 pstmt.executeUpdate();
-                System.out.println("Update guests set lname = '" + txtLName + 
-                   "', fname = '" + txtFName + 
-                   "', address1 = '" + txtAddress1 + 
-                   "', address2 = '" + txtAddress2 + 
-                   "', city = '" + txtCity + 
-                   "', state = '" + txtState + 
-                   "', country = '" + txtCountry + 
-                   "', pincode = '" + txtPincode + 
-                   "', UID_type = '" + ddlUIDType + 
-                   "', UID_NO = '" + txtUIDNo + 
-                   "', phone = '" + txtPhone + 
-                   "', update_on = now(), updated_by = '" + txtUserId + 
-                   "' where guestid = '" + txtGuestId + "';");
-
                 pstmt.close();
             }
 
+            // 🔹 Commit transaction
+            con.commit();
+
         } catch (Exception e) {
+            if (con != null) {
+                try { con.rollback(); } catch (SQLException ex2) { ex2.printStackTrace(); }
+            }
             System.out.println("Error in Guest.java");
             e.printStackTrace();
-            e = ex;
+            ex = e;
         } finally {
-            con.close();
+            if (rst != null) rst.close();
+            if (pstmt != null) pstmt.close();
+            if (con != null) con.close();
         }
+
         return ex;
     }
-
 }

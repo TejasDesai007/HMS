@@ -9,77 +9,68 @@ public class TypePrice {
 
     private String txtUserId, txtTypePrice, txtRoomType;
 
+    // getters & setters
+    public String getTxtUserId() { return txtUserId; }
+    public void setTxtUserId(String txtUserId) { this.txtUserId = txtUserId; }
 
-    public String getTxtUserId() {
-        return txtUserId;
-    }
+    public String getTxtTypePrice() { return txtTypePrice; }
+    public void setTxtTypePrice(String txtTypePrice) { this.txtTypePrice = txtTypePrice; }
 
-    public void setTxtUserId(String txtUserId) {
-        this.txtUserId = txtUserId;
-    }
+    public String getTxtRoomType() { return txtRoomType; }
+    public void setTxtRoomType(String txtRoomType) { this.txtRoomType = txtRoomType; }
 
-    public String getTxtTypePrice() {
-        return txtTypePrice;
-    }
-
-    public void setTxtTypePrice(String txtTypePrice) {
-        this.txtTypePrice = txtTypePrice;
-    }
-
-    public String getTxtRoomType() {
-        return txtRoomType;
-    }
-
-    public void setTxtRoomType(String txtRoomType) {
-        this.txtRoomType = txtRoomType;
-    }
     public String isBlankNull(String s) {
         return (s == null || s.trim().isEmpty()) ? "" : s;
     }
 
-    public Exception TypePrice() throws SQLException {
+    // ❗ Renamed method (not constructor)
+    public Exception saveTypePrice() throws SQLException {
+
         Exception ex = null;
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rst = null;
-        MySqlConnection dbc;
 
         try {
-            dbc = new MySqlConnection();
+            PostgreSqlConnection dbc = new PostgreSqlConnection();
             con = dbc.getConnection();
 
-            // 🔹 Start transaction
             con.setAutoCommit(false);
 
-            // 🔹 Lock the type row (if exists) to prevent duplicate insert
-            pstmt = con.prepareStatement("SELECT * FROM roomsTypesDetails WHERE type = ? FOR UPDATE");
+            // 🔒 Lock row to prevent duplicates
+            pstmt = con.prepareStatement(
+                "SELECT 1 FROM room_types_details WHERE type = ? FOR UPDATE"
+            );
             pstmt.setString(1, txtRoomType);
             rst = pstmt.executeQuery();
 
             if (rst.next()) {
                 throw new SQLException("Room type '" + txtRoomType + "' already exists.");
             }
+
             rst.close();
             pstmt.close();
 
-            // Insert new room type
+            // ✅ PostgreSQL insert
             pstmt = con.prepareStatement(
-                "INSERT INTO roomsTypesDetails(type, type_price, created_on, created_by) VALUES (?, ?, NOW(), ?)"
+                "INSERT INTO room_types_details " +
+                "(type, type_price, created_on, created_by) " +
+                "VALUES (?, ?, CURRENT_TIMESTAMP, ?)"
             );
-            pstmt.setString(1, txtRoomType);
-            pstmt.setString(2, txtTypePrice);
-            pstmt.setString(3, txtUserId);
-            pstmt.executeUpdate();
-            pstmt.close();
 
-            // 🔹 Commit transaction
+            pstmt.setString(1, txtRoomType);
+            pstmt.setBigDecimal(2, new java.math.BigDecimal(txtTypePrice));
+            pstmt.setString(3, txtUserId);
+
+            pstmt.executeUpdate();
+
             con.commit();
 
         } catch (Exception e) {
             if (con != null) {
-                try { con.rollback(); } catch (SQLException ex2) { ex2.printStackTrace(); }
+                try { con.rollback(); } catch (SQLException ignored) {}
             }
-            System.out.println("Error in TypePrice.java");
+            System.out.println("❌ Error in TypePrice.java");
             e.printStackTrace();
             ex = e;
         } finally {

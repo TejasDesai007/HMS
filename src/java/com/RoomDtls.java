@@ -7,133 +7,116 @@ import java.sql.SQLException;
 
 public class RoomDtls {
 
-    private String txtUserId, txtRoomdscrpt, txtRoomPrice, slcRoomType, txtRoomNo, txtRoomId;
+    private String txtUserId, txtRoomdscrpt, txtRoomPrice,
+            slcRoomType, txtRoomNo, txtRoomId;
 
-    
-    public String getTxtUserId() {
-        return txtUserId;
-    }
+    // ---------- Getters & Setters (UNCHANGED) ----------
+    public String getTxtUserId() { return txtUserId; }
+    public void setTxtUserId(String txtUserId) { this.txtUserId = txtUserId; }
 
-    public void setTxtUserId(String txtUserId) {
-        this.txtUserId = txtUserId;
-    }
+    public String getTxtRoomdscrpt() { return txtRoomdscrpt; }
+    public void setTxtRoomdscrpt(String txtRoomdscrpt) { this.txtRoomdscrpt = txtRoomdscrpt; }
 
-    public String getTxtRoomdscrpt() {
-        return txtRoomdscrpt;
-    }
+    public String getTxtRoomPrice() { return txtRoomPrice; }
+    public void setTxtRoomPrice(String txtRoomPrice) { this.txtRoomPrice = txtRoomPrice; }
 
-    public void setTxtRoomdscrpt(String txtRoomdscrpt) {
-        this.txtRoomdscrpt = txtRoomdscrpt;
-    }
+    public String getSlcRoomType() { return slcRoomType; }
+    public void setSlcRoomType(String slcRoomType) { this.slcRoomType = slcRoomType; }
 
-    public String getTxtRoomPrice() {
-        return txtRoomPrice;
-    }
+    public String getTxtRoomNo() { return txtRoomNo; }
+    public void setTxtRoomNo(String txtRoomNo) { this.txtRoomNo = txtRoomNo; }
 
-    public void setTxtRoomPrice(String txtRoomPrice) {
-        this.txtRoomPrice = txtRoomPrice;
-    }
-
-    public String getSlcRoomType() {
-        return slcRoomType;
-    }
-
-    public void setSlcRoomType(String slcRoomType) {
-        this.slcRoomType = slcRoomType;
-    }
-
-    public String getTxtRoomNo() {
-        return txtRoomNo;
-    }
-
-    public void setTxtRoomNo(String txtRoomNo) {
-        this.txtRoomNo = txtRoomNo;
-    }
-
-    public String getTxtRoomId() {
-        return txtRoomId;
-    }
-
-    public void setTxtRoomId(String txtRoomId) {
-        this.txtRoomId = txtRoomId;
-    }
-
+    public String getTxtRoomId() { return txtRoomId; }
+    public void setTxtRoomId(String txtRoomId) { this.txtRoomId = txtRoomId; }
+    // --------------------------------------------------
 
     public String isBlankNull(String s) {
         return (s == null || s.trim().isEmpty()) ? "" : s;
     }
 
     public Exception RoomDtls() throws SQLException {
+
         Exception ex = null;
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rst = null;
-        MySqlConnection dbc;
+        PostgreSqlConnection dbc;
         String roomtype = "";
 
         try {
-            dbc = new MySqlConnection();
+            dbc = new PostgreSqlConnection();
             con = dbc.getConnection();
 
             // 🔹 Start transaction
             con.setAutoCommit(false);
 
-            // Get room type name
+            // 🔹 Get room type name
             pstmt = con.prepareStatement(
-                "SELECT type FROM roomstypesdetails WHERE type_id = ?", 
-                ResultSet.TYPE_SCROLL_INSENSITIVE, 
-                ResultSet.CONCUR_READ_ONLY
+                "SELECT type FROM roomstypesdetails WHERE type_id = ?"
             );
-            pstmt.setString(1, slcRoomType);
+            pstmt.setInt(1, Integer.parseInt(slcRoomType));
             rst = pstmt.executeQuery();
+
             if (rst.next()) {
                 roomtype = rst.getString("type");
             }
+
             rst.close();
             pstmt.close();
 
             if (txtRoomId == null || txtRoomId.trim().isEmpty()) {
-                // Insert new room
+
+                // 🔹 Insert new room (NOW() → CURRENT_TIMESTAMP)
                 pstmt = con.prepareStatement(
-                    "INSERT INTO rooms(room_no, status, room_type, price_per_day, room_dscrpt, created_on, created_by, type_id) " +
-                    "VALUES (?,'Unoccupied',?,?,?,NOW(),?,?)"
+                    "INSERT INTO rooms (room_no, status, room_type, price_per_day, room_dscrpt, created_on, created_by, type_id) " +
+                    "VALUES (?, 'Unoccupied', ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)"
                 );
-                pstmt.setString(1, txtRoomNo);
+
+                pstmt.setInt(1, Integer.parseInt(txtRoomNo));
                 pstmt.setString(2, roomtype);
-                pstmt.setString(3, txtRoomPrice);
+                pstmt.setBigDecimal(3, new java.math.BigDecimal(txtRoomPrice));
                 pstmt.setString(4, txtRoomdscrpt);
-                pstmt.setString(5, txtUserId);
-                pstmt.setString(6, slcRoomType);
+                pstmt.setInt(5, Integer.parseInt(txtUserId));
+                pstmt.setInt(6, Integer.parseInt(slcRoomType));
+
                 pstmt.executeUpdate();
                 pstmt.close();
+
             } else {
-                // 🔹 Lock the room row for update
-                pstmt = con.prepareStatement("SELECT * FROM rooms WHERE roomid = ? FOR UPDATE");
-                pstmt.setString(1, txtRoomId);
+
+                // 🔹 Lock room row (PostgreSQL supports FOR UPDATE)
+                pstmt = con.prepareStatement(
+                    "SELECT roomid FROM rooms WHERE roomid = ? FOR UPDATE"
+                );
+                pstmt.setInt(1, Integer.parseInt(txtRoomId));
                 rst = pstmt.executeQuery();
+
                 if (!rst.next()) {
                     throw new SQLException("Room not found for roomid: " + txtRoomId);
                 }
+
                 rst.close();
                 pstmt.close();
 
-                // Update existing room
+                // 🔹 Update existing room
                 pstmt = con.prepareStatement(
-                    "UPDATE rooms SET room_no = ?, room_type = ?, price_per_day = ?, room_dscrpt = ?, updated_on = NOW(), updated_by = ?, type_id = ? " +
-                    "WHERE roomid = ?"
+                    "UPDATE rooms SET room_no = ?, room_type = ?, price_per_day = ?, room_dscrpt = ?, " +
+                    "updated_on = CURRENT_TIMESTAMP, updated_by = ?, type_id = ? WHERE roomid = ?"
                 );
-                pstmt.setString(1, txtRoomNo);
+
+                pstmt.setInt(1, Integer.parseInt(txtRoomNo));
                 pstmt.setString(2, roomtype);
-                pstmt.setString(3, txtRoomPrice);
+                pstmt.setBigDecimal(3, new java.math.BigDecimal(txtRoomPrice));
                 pstmt.setString(4, txtRoomdscrpt);
-                pstmt.setString(5, txtUserId);
-                pstmt.setString(6, slcRoomType);
-                pstmt.setString(7, txtRoomId);
+                pstmt.setInt(5, Integer.parseInt(txtUserId));
+                pstmt.setInt(6, Integer.parseInt(slcRoomType));
+                pstmt.setInt(7, Integer.parseInt(txtRoomId));
+
                 pstmt.executeUpdate();
                 pstmt.close();
             }
 
-            // 🔹 Commit transaction
+            // 🔹 Commit
             con.commit();
 
         } catch (Exception e) {
@@ -143,6 +126,7 @@ public class RoomDtls {
             System.out.println("Error in RoomDtls.java");
             e.printStackTrace();
             ex = e;
+
         } finally {
             if (rst != null) rst.close();
             if (pstmt != null) pstmt.close();

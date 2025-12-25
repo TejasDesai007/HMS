@@ -1,30 +1,27 @@
 <%@page import="java.sql.PreparedStatement"%>
 <%@page import="java.sql.ResultSet"%>
 <%@page import="java.sql.Connection"%>
-<%@page import="com.MySqlConnection"%>
+<%@page import="com.PostgreSqlConnection"%>
 <%@page import="org.json.JSONObject"%> 
 <%@page import="org.json.JSONArray"%>  
 <%@page contentType="application/json" pageEncoding="UTF-8"%>
 
 <%!
-    // Utility function to handle null or empty strings
     public String isBlankNull(String str) {
         return (str == null || str.trim().isEmpty()) ? "" : str;
     }
 %>
 
 <%
-    // Initialize the database connection objects
-    MySqlConnection dbc = new MySqlConnection();
+    PostgreSqlConnection dbc = new PostgreSqlConnection();
     Connection con = null;
     PreparedStatement pstmt = null;
     ResultSet rst = null;
 
-    // Get the raw JSON data sent from the frontend
-    String jsonData = request.getReader().lines().collect(java.util.stream.Collectors.joining());
-    JSONObject jsonInput = new JSONObject(jsonData);  // Convert the raw data into a JSON object
+    String jsonData = request.getReader().lines()
+            .collect(java.util.stream.Collectors.joining());
+    JSONObject jsonInput = new JSONObject(jsonData);
 
-    // Extract parameters from the JSON object
     String lname = isBlankNull(jsonInput.optString("lname"));
     String city = isBlankNull(jsonInput.optString("city"));
     String state = isBlankNull(jsonInput.optString("state"));
@@ -33,49 +30,48 @@
     String UID_NO = isBlankNull(jsonInput.optString("UID_NO"));
     String phone = isBlankNull(jsonInput.optString("phone"));
 
-    // Prepare the SQL query with filters
-    String query = "Select  guestid, lname, g.fname, address1, address2, city, state, country, pincode, UID_type, UID_NO, phone, DATE_FORMAT(created_on, '%d-%m-%Y') AS createdOn , u.fName"
-            + " from guests g "
-            + " join( "
-            + " Select userid,fName from userdetails "
-            + " )u on u.userid = g.created_by "
-            + "  WHERE 1=1 order by created_on desc ";
-        
+    // PostgreSQL query (DATE_FORMAT → TO_CHAR, LIKE → ILIKE)
+    String query =
+        "SELECT g.guestid, g.lname, g.fname, g.address1, g.address2, g.city, g.state, g.country, " +
+        "g.pincode, g.uid_type, g.uid_no, g.phone, " +
+        "TO_CHAR(g.created_on, 'DD-MM-YYYY') AS createdon, u.fname AS created_by " +
+        "FROM guests g " +
+        "JOIN userdetails u ON u.userid = g.created_by " +
+        "WHERE 1=1 ";
 
     if (!lname.isEmpty()) {
-        query += " AND (g.lname LIKE ? OR g.fname LIKE ?)";
+        query += " AND (g.lname ILIKE ? OR g.fname ILIKE ?)";
     }
     if (!city.isEmpty()) {
-        query += " AND city LIKE ?";
+        query += " AND g.city ILIKE ?";
     }
     if (!state.isEmpty()) {
-        query += " AND state LIKE ?";
+        query += " AND g.state ILIKE ?";
     }
     if (!country.isEmpty()) {
-        query += " AND country LIKE ?";
+        query += " AND g.country ILIKE ?";
     }
     if (!pincode.isEmpty()) {
-        query += " AND pincode LIKE ?";
+        query += " AND g.pincode::TEXT ILIKE ?";
     }
     if (!UID_NO.isEmpty()) {
-        query += " AND UID_NO LIKE ?";
+        query += " AND g.uid_no ILIKE ?";
     }
     if (!phone.isEmpty()) {
-        query += " AND phone LIKE ?";
+        query += " AND g.phone ILIKE ?";
     }
-    System.out.println(query);
 
-    // Execute the query
+    query += " ORDER BY g.created_on DESC";
+
     try {
         con = dbc.getConnection();
         pstmt = con.prepareStatement(query);
 
         int paramIndex = 1;
 
-        // Set parameters for the prepared statement
         if (!lname.isEmpty()) {
             pstmt.setString(paramIndex++, "%" + lname + "%");
-            pstmt.setString(paramIndex++, "%" + lname + "%"); // For both lname and fname
+            pstmt.setString(paramIndex++, "%" + lname + "%");
         }
         if (!city.isEmpty()) {
             pstmt.setString(paramIndex++, "%" + city + "%");
@@ -98,12 +94,13 @@
 
         rst = pstmt.executeQuery();
 
-        // Prepare the response data as a JSON array
         JSONArray jsonResponse = new JSONArray();
         int iRow = 0;
+
         while (rst.next()) {
             JSONObject guest = new JSONObject();
             iRow++;
+
             guest.put("index", iRow);
             guest.put("guestid", rst.getInt("guestid"));
             guest.put("lname", rst.getString("lname"));
@@ -114,32 +111,25 @@
             guest.put("state", rst.getString("state"));
             guest.put("country", rst.getString("country"));
             guest.put("pincode", rst.getString("pincode"));
-            guest.put("UID_type", rst.getString("UID_type"));
-            guest.put("UID_NO", rst.getString("UID_NO"));
+            guest.put("UID_type", rst.getString("uid_type"));
+            guest.put("UID_NO", rst.getString("uid_no"));
             guest.put("phone", rst.getString("phone"));
-            guest.put("created_on", rst.getString("createdOn"));
-            guest.put("created_by", rst.getString("u.fName"));
+            guest.put("created_on", rst.getString("createdon"));
+            guest.put("created_by", rst.getString("created_by"));
+
             jsonResponse.put(guest);
         }
 
-        // Send the JSON response to the frontend
         response.getWriter().write(jsonResponse.toString());
 
     } catch (Exception ex) {
         ex.printStackTrace();
-        // In case of an error, return an empty JSON array
         response.getWriter().write("[]");
     } finally {
         try {
-            if (rst != null) {
-                rst.close();
-            }
-            if (pstmt != null) {
-                pstmt.close();
-            }
-            if (con != null) {
-                con.close();
-            }
+            if (rst != null) rst.close();
+            if (pstmt != null) pstmt.close();
+            if (con != null) con.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

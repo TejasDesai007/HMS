@@ -2,6 +2,30 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Rooms/DeleteType.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Bookins/Checkout.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Bookins/DeleteBookings.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/Guest.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/UserRegistration.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/DBConnection.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Guest/frmGuest.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/TypePrice.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Rooms/DeleteRooms.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Rooms/RoomListInnr.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/PostgreSqlConnection.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/Bookings.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/MySqlConnection.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Bookins/BookingsList.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Guest/GuestList.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Guest/InsertGuest.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Bookins/frmBookings.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/src/java/com/RoomDtls.java</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Guest/GuestListInnr.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Bookins/InsertBookings.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Bookins/BookingsInnrList.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Guest/DeleteGuests.jsp</file>
+            <file>file:/C:/Users/TEJAS/OneDrive/Documents/NetBeansProjects/HMS/web/Rooms/RoomList.jsp</file>
+        </group>
     </open-files>
 </project-private>

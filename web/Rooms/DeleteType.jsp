@@ -1,25 +1,36 @@
 <%@page import="java.sql.SQLException"%>
 <%@page import="java.sql.PreparedStatement"%>
-<%@page import="java.sql.ResultSet"%>
 <%@page import="java.sql.Connection"%>
-<%@page import="com.MySqlConnection"%>
+<%@page import="com.PostgreSqlConnection"%>
+
 <%!
     public String isBlankNull(String str) {
         return (str == null || str.trim().isEmpty()) ? "" : str;
     }
 %>
+
 <%
-    MySqlConnection dbc = new MySqlConnection();
+    PostgreSqlConnection dbc = new PostgreSqlConnection();
     Connection con = null;
     PreparedStatement pstmt = null;
+
     String typeid = isBlankNull(request.getParameter("typeid"));
 
     try {
-        con = dbc.getConnection();
-        pstmt = con.prepareStatement("DELETE FROM roomstypesdetails WHERE type_id = ?");
-        pstmt.setString(1, typeid);
+        if (typeid.isEmpty()) {
+            out.println("Type ID is required.");
+            return;
+        }
 
-        int rowsAffected = pstmt.executeUpdate(); // Use executeUpdate to execute the DELETE query
+        con = dbc.getConnection();
+
+        pstmt = con.prepareStatement(
+            "DELETE FROM roomstypesdetails WHERE type_id = ?"
+        );
+        pstmt.setInt(1, Integer.parseInt(typeid));
+
+        int rowsAffected = pstmt.executeUpdate();
+
         if (rowsAffected > 0) {
             out.println("Deleted Successfully!");
         } else {
@@ -27,14 +38,15 @@
         }
 
     } catch (SQLException ex) {
-        // Check for foreign key constraint violation or other specific errors
-        if (ex.getMessage().toLowerCase().contains("foreign key constraint fails")) {
+
+        // PostgreSQL foreign-key violation SQLSTATE
+        if ("23503".equals(ex.getSQLState())) {
             out.println("Cannot delete: The type is used in Rooms Details.");
         } else {
             out.println("Error occurred: " + ex.getMessage());
         }
+
     } finally {
-        // Ensure resources are closed properly
         try {
             if (pstmt != null) pstmt.close();
             if (con != null) con.close();

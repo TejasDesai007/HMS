@@ -2,41 +2,53 @@
 <%@page import="java.sql.PreparedStatement"%>
 <%@page import="java.sql.ResultSet"%>
 <%@page import="java.sql.Connection"%>
-<%@page import="com.MySqlConnection"%>
+<%@page import="com.PostgreSqlConnection"%>
+
 <%!
     public String isBlankNull(String str) {
         return (str == null || str.trim().isEmpty()) ? "" : str;
     }
 %>
+
 <%
-    MySqlConnection dbc = new MySqlConnection();
+    PostgreSqlConnection dbc = new PostgreSqlConnection();
     Connection con = null;
     PreparedStatement pstmt = null;
     ResultSet rst = null;
+
     String bookingid = isBlankNull(request.getParameter("bookingid"));
 
     try {
-        // Ensure bookingid is not empty
+        // Validate bookingid
         if (bookingid.isEmpty()) {
             out.println("Booking ID is required.");
             return;
         }
 
         con = dbc.getConnection();
+        con.setAutoCommit(false);
 
-        // Check if the booking exists and if the guest has checked out
-        pstmt = con.prepareStatement("SELECT check_out FROM bookings WHERE bookingid = ?");
-        pstmt.setString(1, bookingid);
+        // ? Check checkout status
+        pstmt = con.prepareStatement(
+            "SELECT check_out FROM bookings WHERE bookingid = ?"
+        );
+        pstmt.setInt(1, Integer.parseInt(bookingid));
         rst = pstmt.executeQuery();
 
         if (rst.next()) {
             String strCheckout = rst.getString("check_out");
-            if (isBlankNull(strCheckout).equalsIgnoreCase("")) {
+
+            if (isBlankNull(strCheckout).isEmpty()) {
                 out.println("Cannot delete the booking as the guest has not checked out.");
             } else {
-                // Proceed with the deletion if the guest has checked out
-                pstmt = con.prepareStatement("DELETE FROM Bookings WHERE bookingid = ?");
-                pstmt.setString(1, bookingid);
+                rst.close();
+                pstmt.close();
+
+                // ? Delete booking (PostgreSQL table name lowercase)
+                pstmt = con.prepareStatement(
+                    "DELETE FROM bookings WHERE bookingid = ?"
+                );
+                pstmt.setInt(1, Integer.parseInt(bookingid));
 
                 int rowsAffected = pstmt.executeUpdate();
                 if (rowsAffected > 0) {
@@ -44,24 +56,24 @@
                 } else {
                     out.println("No booking found with the given Booking ID.");
                 }
+
+                con.commit();
             }
         } else {
             out.println("No booking found with the given Booking ID.");
         }
-    } catch (SQLException ex) {
+
+    } catch (Exception ex) {
+        if (con != null) {
+            try { con.rollback(); } catch (Exception e) { e.printStackTrace(); }
+        }
         out.println("Error occurred: " + ex.getMessage());
+
     } finally {
-        // Ensure that resources are properly closed
         try {
-            if (rst != null) {
-                rst.close();
-            }
-            if (pstmt != null) {
-                pstmt.close();
-            }
-            if (con != null) {
-                con.close();
-            }
+            if (rst != null) rst.close();
+            if (pstmt != null) pstmt.close();
+            if (con != null) con.close();
         } catch (SQLException e) {
             out.println("Error closing resources: " + e.getMessage());
         }

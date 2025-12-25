@@ -1,10 +1,11 @@
 <%@page import="java.sql.*"%>
-<%@page import="com.MySqlConnection"%>
+<%@page import="com.PostgreSqlConnection"%>
 <%
-    MySqlConnection dbc = new MySqlConnection();
+    PostgreSqlConnection dbc = new PostgreSqlConnection();
     Connection con = null;
     PreparedStatement pstmt = null;
     ResultSet rst = null;
+
     String strUserName = request.getParameter("username");
 
     response.setContentType("application/json");
@@ -12,7 +13,11 @@
 
     try {
         con = dbc.getConnection();
-        pstmt = con.prepareStatement("SELECT UserId, fname FROM userdetails WHERE BINARY UserName = ?");
+
+        // PostgreSQL: BINARY removed, use case-sensitive comparison directly
+        pstmt = con.prepareStatement(
+            "SELECT userid, fname FROM userdetails WHERE username = ?"
+        );
         pstmt.setString(1, strUserName);
 
         rst = pstmt.executeQuery();
@@ -22,8 +27,11 @@
         } else {
             response.getWriter().write("{\"status\":\"Valid\"}");
         }
+
     } catch (Exception ex) {
-        response.getWriter().write("{\"status\":\"Error\",\"message\":\"" + ex.getMessage() + "\"}");
+        response.getWriter().write(
+            "{\"status\":\"Error\",\"message\":\"" + ex.getMessage() + "\"}"
+        );
     } finally {
         if (rst != null) rst.close();
         if (pstmt != null) pstmt.close();

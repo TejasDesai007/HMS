@@ -7,11 +7,15 @@ public class PostgreSqlConnection {
 
     public Connection getConnection() {
         try {
+            // Load PostgreSQL JDBC Driver
             Class.forName("org.postgresql.Driver");
 
-            String url = System.getenv("DB_URL");
-            String user = System.getenv("DB_USER");
-            String pass = System.getenv("DB_PASS");
+            // ✅ CORRECT JDBC URL (NO username/password here)
+            String url =
+                "jdbc:postgresql://ep-dawn-dew-a1m5y4t3-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require";
+
+            String user = "neondb_owner";
+            String pass = "npg_ysd7QUjuecA3";
 
             System.out.println("DB_URL = " + url);
             System.out.println("DB_USER = " + user);

@@ -4,7 +4,7 @@ FROM tomcat:9.0-jdk17
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Copy your WAR
-COPY dist/HMS.war /usr/local/tomcat/webapps/ROOT.war
+COPY dist/HMS.war /usr/local/tomcat/webapps/HMS.war
 
 # Expose port (Render uses $PORT)
 ENV PORT=8080

@@ -1,8 +1,8 @@
-<%@page import="com.MySqlConnection"%>
+
 <%@page import="java.sql.ResultSet"%>
 <%@page import="java.sql.PreparedStatement"%>
 <%@page import="java.sql.Connection"%>
-<%@page import="com.DBConnection"%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%!
     public String isBlankNull(String str) {

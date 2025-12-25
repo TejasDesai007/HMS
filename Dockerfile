@@ -7,6 +7,7 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY webapps/ROOT.war /usr/local/tomcat/webapps/ROOT.war
 
 # Expose port (Render uses $PORT)
+ENV PORT=8080
 EXPOSE 8080
 
 # Start Tomcat

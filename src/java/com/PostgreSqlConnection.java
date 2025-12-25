@@ -26,6 +26,7 @@ public class PostgreSqlConnection {
             System.out.println("✅ PostgreSQL Connected Successfully");
             return con;
 
+            
         } catch (Exception e) {
             System.out.println("❌ DB CONNECTION FAILED");
             e.printStackTrace();
